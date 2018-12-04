@@ -1,8 +1,8 @@
 from lib.db import DB
 from lib.DisjointSet import DisjointSet
 from pprint import pprint
-
-import json
+from lib.BitcoinBlockCrawler import BitcoinBlockCrawler
+import json, csv
 from migrations.createTables import createTables
 
 # Load configuration file and connect to database
@@ -10,29 +10,33 @@ with open('config.json') as json_file:
     config = json.load(json_file)
 
 db = DB(config['DB'])
+createTables(db)
 
-# createTables(db)
+# queries1 = []
+# addresses = []
+# queries1 = """SELECT * FROM addresses;"""
+# addresses = db.execute(queries1, False)
+# queries2 = []
+# query2 = """UPDATE addresses SET id = (SELECT id FROM address_matching where address={0});"""
+# for row in addresses:
+#     queries2.append(query2.format(row))
+# db.execute(queries2, False)
 
-# Load transaction json file
-with open('data.json') as json_file:
-    transactions = json.load(json_file)['data']
+# queries=[]
+# query="""INSERT INTO address_mapping (address, id) VALUES ('{0}',{1});"""
+#
+# csv_file = csv.reader(open('/Users/macbook/Desktop/map_addresses-1_500000.csv', 'rt'), delimiter=',')
+# for row in csv_file:
+#     try:
+#         id = int(row[1])
+#     except ValueError:
+#         print('Please enter an integer')
+#         continue
+#     queries.append(query.format(row[0], id))
+#
+#     if len(queries) == 1000:
+#         db.execute(queries,False)
+#         queries = []
+#         print('Saved 1000.')
 
-query = """
-        INSERT INTO TRANSACTIONS (receiver, sender, amount) VALUES ('{0}', '{1}', {2});
-    """
 
-for transaction in transactions:
-    receiver1=transaction['to'][18:][:-24]
-    sender1=transaction['from'][18:][:-24]
-    amount1=transaction['value'][:-4]
-
-    # db.execute([query.format(str(receiver1),str(sender1),str(amount1))],False);
-
-results = db.execute(["SELECT receiver, sender from transactions"]);
-
-ds = DisjointSet()
-
-for result in results:
-    ds.add(result[0], result[1])
-
-pprint(ds.group)
